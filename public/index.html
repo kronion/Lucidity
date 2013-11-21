@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Lucidity</title>
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <link href='http://fonts.googleapis.com/css?family=Roboto:400,300' rel='stylesheet' type='text/css'>
+  </head>
+  <body>
+    <h1>Lucidity</h1>
+    <div id="textcontainer">
+      <textarea id="query" cols=80 rows=6 placeholder="Type here"></textarea><input id="send" type="submit" value="Ask!">
+    </div>
+    <div id="stream">
+    </div>
+    <script src="jquery-1.10.2.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+      var socket = io.connect('http://localhost');
+
+      var message1 = "<div class='message1'><p>";
+      var message2 = "<div class='message2'><p>";
+      var close = "</p></div>";
+      var bool = true;
+
+      $('#send').on('click', function(e) {
+        e.preventDefault();
+        if ($('#query').val()) {
+          socket.emit('query', {
+            content: $('#query').val()
+          });
+          $('#query').val('');
+        }
+      });
+      socket.on('update', function (data) {
+        if (bool) {
+          $('#stream').prepend(message1 + data.content + close);
+          bool = false;
+        }
+        else {
+          $('#stream').prepend(message2 + data.content + close);
+          bool = true;
+        }
+      });
+    </script>
+  </body>
+</html>
