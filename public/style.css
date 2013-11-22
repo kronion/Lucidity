@@ -6,6 +6,7 @@ h1 {
   font-weight: 300;
   font-size: 64px;
   text-align: center;
+  margin-bottom: 10px;
 }
 
 #count {
@@ -22,22 +23,36 @@ div {
   width: 350px;
 }
 
+#charcount {
+  width: 340px;
+  padding: 5px;
+  background-color: #a0a0a0;
+  display: none;
+}
+
+#stream {
+  margin-bottom: 40px;
+}
+
 .message1 {
   background-color: #ee9f5d;
   padding: 5px;
   width: 340px;
+  display: none;
 }
 
 .message2 {
   background-color: #eeaf7d;
   padding: 5px;
   width: 340px;
+  display: none;
 }
 
 .admin {
   background-color: #eebf4d;
   padding: 5px;
   width: 340px;
+  display: none;
 }
 
 #textcontainer {

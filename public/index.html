@@ -9,14 +9,15 @@
     <h1>Lucidity</h1>
     <h5 id="count">Ask questions with 0 other users!</h5>
     <div id="textcontainer">
-      <textarea id="query" cols=80 rows=6 placeholder="Type here"></textarea><input id="send" type="submit" value="Ask!">
+      <textarea id="query" cols=80 rows=6 onpaste="paste(event)" placeholder="Have a question?"></textarea><input id="send" type="submit" value="Ask!">
     </div>
+    <div id="charcount"><p></p></div>
     <div id="stream">
     </div>
     <script src="jquery-1.10.2.min.js"></script>
     <script src="/socket.io/socket.io.js"></script>
     <script>
-      var socket = io.connect('http://nodenexus.com:3000');
+      var socket = io.connect('http://localhost:3000');
 
       var message1 = "<div class='message1' id=";
       var message2 = "<div class='message2' id=";
@@ -29,20 +30,85 @@
       var countSingle = " other user!";
 
       var bool = true;
+      
+      var remaining = " characters remaining.";
+      var remainingSingle = " character remaining.";
+      var limit = 200;
+      var characters = 0;
+
+      $('#query').focus(function() {
+        if (characters == 199) {
+          $('#charcount p').text((limit-characters) + remainingSingle);
+        }
+        else $('#charcount p').text((limit-characters) + remaining);
+        $('#charcount').slideDown('slow');
+      });
+      $('#query').focusout(function() {
+        $('#charcount').slideUp('slow');
+      });
+
+      var charCount = function(str) {
+        var newlines = str.split('\n').length - 1;
+        return str.length + 29 * newlines;
+      };
+
+      var send = function(e) {
+        e.preventDefault();
+        characters = charCount($('#query').val());
+        if (characters <= limit) {
+          var notEmpty = $('#query').val().replace(/\n/g, '');
+          if (notEmpty) {
+            socket.emit('query', {
+              content: $('#query').val()
+            });
+            $('#query').val('');
+            characters = 0;
+            $('#charcount p').text((limit-characters) + remaining);
+          }
+        }
+      };
 
       $('#send').on('click', function(e) {
-        e.preventDefault();
-        if ($('#query').val()) {
-          socket.emit('query', {
-            content: $('#query').val()
-          });
-          $('#query').val('');
+        send(e);
+      });
+      $('#query').keydown(function(e) {
+        if (e.which == 13 && !e.shiftKey) {
+          send(e);
+        }
+        else if (e.which == 13 && e.shiftKey) {
+          setTimeout(function() {
+            characters = charCount($('#query').val());
+            if (characters == 199) {
+              $('#charcount p').text((limit-characters) + remainingSingle);
+            }
+            else $('#charcount p').text((limit-characters) + remaining);
+          }, 50);
+        }
+        else {
+          setTimeout(function() {
+            characters = charCount($('#query').val());
+            if (characters == 199) {
+              $('#charcount p').text((limit-characters) + remainingSingle);
+            }
+            else $('#charcount p').text((limit-characters) + remaining);
+          }, 50);
         }
       });
+      function paste(e) {
+        setTimeout(function() {
+          characters = charCount($('#query').val());
+          if (characters == 199) {
+            $('#charcount p').text((limit-characters) + remainingSingle);
+          }
+          else $('#charcount p').text((limit-characters) + remaining);
+        }, 50);
+      }
+
       socket.on('update', function (data) {
         if (data.admin) {
           $('#stream').prepend(admin + data.id + middle + close);
           $('#'+data.id+' p').text(data.content);
+          $('#'+data.id).slideDown('slow');
           if (data.users === 1) {
             $('#count').text(count1 + data.users + countSingle);
           }
@@ -52,7 +118,24 @@
         }
         else if (bool) {
           $('#stream').prepend(message1 + data.id + middle + close);
-          $('#'+data.id+' p').text(data.content);
+          if (data.content.length == 1) {
+            $('#'+data.id+' p').text(data.content[0]);
+            $('#'+data.id).slideDown('slow');
+          }
+          else {
+            for (var i=0; i < data.content.length-1; i++) {
+              if (data.content[i]) {
+                $('#'+data.id+' p:last').text(data.content[i]);
+              }
+              else $('#'+data.id).append('<br>');
+              $('#'+data.id).append('<p></p>');
+            }
+            if (data.content[data.content.length-1]) {
+              $('#'+data.id+' p:last').text(data.content[data.content.length-1]);
+            }
+            else $('#'+data.id).append('<br>');
+            $('#'+data.id).slideDown('slow');
+          }
           if (data.users === 1) {
             $('#count').text(count1 + data.users + countSingle);
           }
@@ -63,7 +146,24 @@
         }
         else {
           $('#stream').prepend(message2 + data.id + middle + close);
-          $('#'+data.id+' p').text(data.content);
+          if (data.content.length == 1) {
+            $('#'+data.id+' p').text(data.content[0]);
+            $('#'+data.id).slideDown('slow');
+          }
+          else {
+            for (var i=0; i < data.content.length-1; i++) {
+              if (data.content[i]) {
+                $('#'+data.id+' p:last').text(data.content[i]);
+              }
+              else $('#'+data.id).append('<br>');
+              $('#'+data.id).append('<p></p>');
+            }
+            if (data.content[data.content.length-1]) {
+              $('#'+data.id+' p:last').text(data.content[data.content.length-1]);
+            }
+            else $('#'+data.id).append('<br>');
+            $('#'+data.id).slideDown('slow');
+          }
           if (data.users === 1) {
             $('#count').text(count1 + data.users + countSingle);
           }

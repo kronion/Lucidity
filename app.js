@@ -25,6 +25,8 @@ io.sockets.on('connection', function (socket) {
                             admin: true });
   }, 500);
   socket.on('query', function (data) {
+    data.content = data.content.split(/\n/g);
+    console.log(data.content);
     io.sockets.emit('update', { content: data.content, 
                                 id: count++, 
                                 users: users,
