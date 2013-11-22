@@ -16,7 +16,7 @@
     <script src="jquery-1.10.2.min.js"></script>
     <script src="/socket.io/socket.io.js"></script>
     <script>
-      var socket = io.connect('http://localhost');
+      var socket = io.connect('http://nodenexus.com:3000');
 
       var message1 = "<div class='message1' id=";
       var message2 = "<div class='message2' id=";
@@ -71,6 +71,14 @@
             $('#count').text(count1 + data.users + count2);
           }
           bool = true;
+        }
+      });
+      socket.on('users', function (data) {
+        if (data.users === 1) {
+          $('#count').text(count1 + data.users + countSingle);
+        }
+        else {
+          $('#count').text(count1 + data.users + count2);
         }
       });
     </script>
