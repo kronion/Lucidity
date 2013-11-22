@@ -15,6 +15,9 @@ var count = 0;
 
 io.sockets.on('connection', function (socket) {
   users = users+1;
+
+  socket.broadcast.emit('users', { users: users });
+
   setTimeout(function() {
     socket.emit('update', { content: intro, 
                             id: count++, 
