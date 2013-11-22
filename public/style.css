@@ -8,6 +8,12 @@ h1 {
   text-align: center;
 }
 
+#count {
+  font-weight: 300;
+  font-size: 30;
+  text-align: center;
+}
+
 div {
   margin-left: auto;
   margin-right: auto;
@@ -24,6 +30,12 @@ div {
 
 .message2 {
   background-color: #eeaf7d;
+  padding: 5px;
+  width: 340px;
+}
+
+.admin {
+  background-color: #eebf4d;
   padding: 5px;
   width: 340px;
 }

@@ -7,6 +7,7 @@
   </head>
   <body>
     <h1>Lucidity</h1>
+    <h5 id="count">Ask questions with 0 other users!</h5>
     <div id="textcontainer">
       <textarea id="query" cols=80 rows=6 placeholder="Type here"></textarea><input id="send" type="submit" value="Ask!">
     </div>
@@ -17,9 +18,16 @@
     <script>
       var socket = io.connect('http://localhost');
 
-      var message1 = "<div class='message1'><p>";
-      var message2 = "<div class='message2'><p>";
+      var message1 = "<div class='message1' id=";
+      var message2 = "<div class='message2' id=";
+      var admin = "<div class='admin' id=";
+      var middle = "><p>";
       var close = "</p></div>";
+
+      var count1 = "Ask questions with ";
+      var count2 = " other users!";
+      var countSingle = " other user!";
+
       var bool = true;
 
       $('#send').on('click', function(e) {
@@ -32,12 +40,36 @@
         }
       });
       socket.on('update', function (data) {
-        if (bool) {
-          $('#stream').prepend(message1 + data.content + close);
+        if (data.admin) {
+          $('#stream').prepend(admin + data.id + middle + close);
+          $('#'+data.id+' p').text(data.content);
+          if (data.users === 1) {
+            $('#count').text(count1 + data.users + countSingle);
+          }
+          else {
+            $('#count').text(count1 + data.users + count2);
+          }
+        }
+        else if (bool) {
+          $('#stream').prepend(message1 + data.id + middle + close);
+          $('#'+data.id+' p').text(data.content);
+          if (data.users === 1) {
+            $('#count').text(count1 + data.users + countSingle);
+          }
+          else {
+            $('#count').text(count1 + data.users + count2);
+          }
           bool = false;
         }
         else {
-          $('#stream').prepend(message2 + data.content + close);
+          $('#stream').prepend(message2 + data.id + middle + close);
+          $('#'+data.id+' p').text(data.content);
+          if (data.users === 1) {
+            $('#count').text(count1 + data.users + countSingle);
+          }
+          else {
+            $('#count').text(count1 + data.users + count2);
+          }
           bool = true;
         }
       });
