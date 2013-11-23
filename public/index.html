@@ -78,29 +78,53 @@
         else if (e.which == 13 && e.shiftKey) {
           setTimeout(function() {
             characters = charCount($('#query').val());
-            if (characters == 199) {
-              $('#charcount p').text((limit-characters) + remainingSingle);
+            if (characters > 200) {
+              $('#charcount p').text((limit-characters) + remaining);
+              $('#charcount').css( { 'background-color': '#996666' });
             }
-            else $('#charcount p').text((limit-characters) + remaining);
+            else if (characters == 199) {
+              $('#charcount p').text((limit-characters) + remainingSingle);
+              $('#charcount').css( { 'background-color': '#646464' });
+            }
+            else {
+              $('#charcount p').text((limit-characters) + remaining);
+              $('#charcount').css( { 'background-color': '#646464' });
+            }
           }, 50);
         }
         else {
           setTimeout(function() {
             characters = charCount($('#query').val());
-            if (characters == 199) {
-              $('#charcount p').text((limit-characters) + remainingSingle);
+            if (characters > 200) {
+              $('#charcount p').text((limit-characters) + remaining);
+              $('#charcount').css( { 'background-color': '#996666' });
             }
-            else $('#charcount p').text((limit-characters) + remaining);
+            else if (characters == 199) {
+              $('#charcount p').text((limit-characters) + remainingSingle);
+              $('#charcount').css( { 'background-color': '#646464' });
+            }
+            else {
+              $('#charcount p').text((limit-characters) + remaining);
+              $('#charcount').css( { 'background-color': '#646464' });
+            }
           }, 50);
         }
       });
       function paste(e) {
         setTimeout(function() {
           characters = charCount($('#query').val());
-          if (characters == 199) {
-            $('#charcount p').text((limit-characters) + remainingSingle);
+          if (characters > 200) {
+            $('#charcount p').text((limit-characters) + remaining);
+            $('#charcount').css( { 'background-color': '#996666' });
           }
-          else $('#charcount p').text((limit-characters) + remaining);
+          else if (characters == 199) {
+            $('#charcount p').text((limit-characters) + remainingSingle);
+            $('#charcount').css( { 'background-color': '#646464' });
+          }
+          else {
+            $('#charcount p').text((limit-characters) + remaining);
+            $('#charcount').css( { 'background-color': '#646464' });
+          }
         }, 50);
       }
 

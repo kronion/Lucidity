@@ -2,11 +2,12 @@ Lucidity
 ========
 
 A live ticker for questions
+<br>
 By Collin Stedman
+<br>
 Built using Node.js, Express, and Socket.IO
 
-Setup Instructions
-------------------
+###Setup Instructions
 
 1. `git clone` this repository.
 2. `npm install`.
