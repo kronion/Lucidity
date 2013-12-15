@@ -37,6 +37,13 @@
       var limit = 200;
       var characters = 0;
 
+      var lastMessage;
+      var rateLimit1 = "You are sending messages too quickly. Please wait ";
+      var rateLimit2 = "and try again.";
+      var second = " second ";
+      var seconds = " seconds ";
+      var localCount = 0;
+
       $('#query').focus(function() {
         if (characters == 199) {
           $('#charcount p').text((limit-characters) + remainingSingle);
@@ -59,12 +66,31 @@
         if (characters <= limit) {
           var notEmpty = $('#query').val().replace(/\n/g, '');
           if (notEmpty) {
-            socket.emit('query', {
-              content: $('#query').val()
-            });
-            $('#query').val('');
-            characters = 0;
-            $('#charcount p').text((limit-characters) + remaining);
+            if (lastMessage == undefined || lastMessage + 8000 < Date.now()) {
+              socket.emit('query', {
+                content: $('#query').val()
+              });
+              $('#query').val('');
+              characters = 0;
+              $('#charcount p').text((limit-characters) + remaining);
+              lastMessage = Date.now();
+              localCount++;
+            }
+            else {
+              var wait = Math.ceil((lastMessage + 8000 - Date.now())/1000);
+              if ($('#a'+localCount).length == 0) {
+                $('#stream').prepend(admin + "a" + localCount + middle + close); 
+              }
+              if (wait == 1) {
+                $('#a'+localCount+' p').text(rateLimit1 + wait + second
+                                              + rateLimit2);
+              }
+              else {
+                $('#a'+localCount+' p').text(rateLimit1 + wait + seconds 
+                                              + rateLimit2);
+              }
+              $('#a'+localCount).slideDown('slow');
+            }
           }
         }
       };
