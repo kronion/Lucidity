@@ -34,9 +34,42 @@ var second = " second ";
 var seconds = " seconds ";
 var displayed = false;
 
+/* Page Visibility API */
+var hidden, state, visibilityChange; 
+if (typeof document.hidden !== "undefined") {
+  hidden = "hidden";
+  visibilityChange = "visibilitychange";
+  state = "visibilityState";
+} else if (typeof document.mozHidden !== "undefined") {
+  hidden = "mozHidden";
+  visibilityChange = "mozvisibilitychange";
+  state = "mozVisibilityState";
+} else if (typeof document.msHidden !== "undefined") {
+  hidden = "msHidden";
+  visibilityChange = "msvisibilitychange";
+  state = "msVisibilityState";
+} else if (typeof document.webkitHidden !== "undefined") {
+  hidden = "webkitHidden";
+  visibilityChange = "webkitvisibilitychange";
+  state = "webkitVisibilityState";
+}
+
+/* Variables for messages received while page is hidden */
+var hiddenCount = 0;
+var intervalID;
+
 /*----------------------------------------------------------------------------*/
 /* FUNCTIONS                                                                  */
 /*----------------------------------------------------------------------------*/
+
+// Add a listener that constantly changes the title
+document.addEventListener(visibilityChange, function() {
+  if (!document[hidden]) {
+    document.title = "Lucidity";
+    hiddenCount = 0;
+    clearInterval(intervalID);
+  }
+}, false);
 
 /* Character count animations */
 $('#query').focus(function() {
@@ -177,6 +210,22 @@ socket.on('users', function (data) {
 
 /* Message has been received */
 socket.on('update', function (data) {
+
+  if (document[hidden]) {
+    hiddenCount++;
+    var state = false;
+    if (intervalID == undefined) {
+      intervalID = setInterval(function () {
+        if (state) {
+          document.title = "Lucidity";
+        }
+        else {
+          document.title = "(" + hiddenCount + ") Message received!";
+        }
+        state = !state;
+      }, 2000);
+    }
+  }
 
   // Admin message
   if (data.admin) {
