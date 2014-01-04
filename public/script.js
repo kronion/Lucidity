@@ -56,7 +56,7 @@ if (typeof document.hidden !== "undefined") {
 
 /* Variables for messages received while page is hidden */
 var hiddenCount = 0;
-var intervalID;
+var intervalID = null;
 
 /*----------------------------------------------------------------------------*/
 /* FUNCTIONS                                                                  */
@@ -68,6 +68,7 @@ document.addEventListener(visibilityChange, function() {
     document.title = "Lucidity";
     hiddenCount = 0;
     clearInterval(intervalID);
+    intervalID = null;
   }
 }, false);
 
@@ -211,10 +212,11 @@ socket.on('users', function (data) {
 /* Message has been received */
 socket.on('update', function (data) {
 
+  // Flash alert in title if window is hidden
   if (document[hidden]) {
     hiddenCount++;
     var state = false;
-    if (intervalID == undefined) {
+    if (!intervalID) {
       intervalID = setInterval(function () {
         if (state) {
           document.title = "Lucidity";
