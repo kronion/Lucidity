@@ -12,6 +12,13 @@ var intro = "Welcome to Lucidity! Ask questions anonymously and get real-time" +
 
 var users = -1;
 
+var charLimit = 200;
+
+function charCount (str) {
+  var newlines = str.split('\n').length - 1;
+  return count = str.length + 29 * newlines;
+}
+
 io.sockets.on('connection', function (socket) {
   users = users+1;
 
@@ -23,11 +30,12 @@ io.sockets.on('connection', function (socket) {
                             admin: true });
   }, 500);
   socket.on('query', function (data) {
-    data.content = data.content.split(/\n/g);
-    console.log(data.content);
-    io.sockets.emit('update', { content: data.content, 
-                                users: users,
-                                admin: false });
+    if (charCount(data.content) <= charLimit) {
+      data.content = data.content.split(/\n/g);
+      io.sockets.emit('update', { content: data.content, 
+                                  users: users,
+                                  admin: false });
+    }
   });
   socket.on('disconnect', function (data) {
     users=users-1;
