@@ -31,6 +31,14 @@ div {
   display: none;
 }
 
+#ratewarning {
+  width: 340px;
+  padding: 5px;
+  background-color: #996666;
+  color: #bbbbbb;
+  display: none;
+}
+
 #stream {
   margin-bottom: 40px;
 }

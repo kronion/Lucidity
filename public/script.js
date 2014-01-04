@@ -32,6 +32,7 @@ var rateLimit1 = "You are sending messages too quickly. Please wait ";
 var rateLimit2 = "and try again.";
 var second = " second ";
 var seconds = " seconds ";
+var displayed = false;
 
 /*----------------------------------------------------------------------------*/
 /* FUNCTIONS                                                                  */
@@ -95,6 +96,30 @@ function displayMessage(message, content) {
   $('#stream div').first().slideDown('slow');
 }
 
+/* Display rate limit warnings */
+function rateLimit(wait) {
+  if (wait == 1) {
+    $('#ratewarning p').text(rateLimit1 + wait + second + rateLimit2);
+    $('#ratewarning').slideDown('slow');
+  }
+  else {
+    $('#ratewarning p').text(rateLimit1 + wait + seconds + rateLimit2);
+    $('#ratewarning').slideDown('slow');
+  }
+  wait = Math.ceil((lastMessage + 7000 - Date.now())/1000);
+  if (wait > 0) {
+    setTimeout(function () {
+      rateLimit(wait);
+    }, 1000);
+  }
+  else {
+    setTimeout(function () {
+      $('#ratewarning').slideUp('slow');
+      displayed = false;
+    }, 1000);
+  }
+}
+
 /* Send a message to the socket.io server */
 var send = function(e) {
   e.preventDefault();
@@ -111,14 +136,10 @@ var send = function(e) {
         $('#charcount p').text((limit-characters) + remaining);
         lastMessage = Date.now();
       }
-      else {
+      else if (displayed == false) {
+        displayed = true;
         var wait = Math.ceil((lastMessage + 8000 - Date.now())/1000);
-        if (wait == 1) {
-          displayMessage(admin, [rateLimit1 + wait + second + rateLimit2]);
-        }
-        else {
-          displayMessage(admin, [rateLimit1 + wait + seconds + rateLimit2]);
-        }
+        rateLimit(wait);
       }
     }
   }
@@ -149,6 +170,11 @@ function userCountUpdate(users) {
   }
 }
 
+/* User update has been received */
+socket.on('users', function (data) {
+  userCountUpdate(data.users);
+});
+
 /* Message has been received */
 socket.on('update', function (data) {
 
@@ -173,9 +199,4 @@ socket.on('update', function (data) {
 
   // Color flip
   altColor = !altColor;
-});
-
-/* User update has been received */
-socket.on('users', function (data) {
-  userCountUpdate(data.users);
 });

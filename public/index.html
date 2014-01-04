@@ -1,10 +1,12 @@
 <!DOCTYPE html>
-<html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:fb="http://ogp.me/ns/fb#">
   <head>
     <title>Lucidity</title>
     <link rel="stylesheet" type="text/css" href="style.css">
     <link href='http://fonts.googleapis.com/css?family=Roboto:400,300' rel='stylesheet' type='text/css'>
     <meta name="viewport" content="width=device-width">
+    <meta property="og:image" content="Lucidity.jpg">
   </head>
   <body>
     <h1>Lucidity</h1>
@@ -13,6 +15,7 @@
       <textarea id="query" cols=80 rows=6 onpaste="charWarning()" placeholder="Have a question?"></textarea><input id="send" type="submit" value="Ask!">
     </div>
     <div id="charcount"><p></p></div>
+    <div id="ratewarning"><p></p></div>
     <div id="stream">
     </div>
     <script src="jquery-1.10.2.min.js"></script>
