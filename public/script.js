@@ -57,6 +57,8 @@ if (typeof document.hidden !== "undefined") {
 /* Variables for messages received while page is hidden */
 var hiddenCount = 0;
 var intervalID = null;
+var audio = document.getElementsByTagName("audio")[0];
+var audioOn = true;
 
 /*----------------------------------------------------------------------------*/
 /* FUNCTIONS                                                                  */
@@ -154,11 +156,35 @@ function rateLimit(wait) {
   }
 }
 
+/* Special commands */
+function specials (command) {
+  if (command == "!sound off") {
+    audioOn = false;
+    return true;
+  }
+  if (command == "!sound on") {
+    audioOn = true;
+    return true;
+  }
+  if (command == "!clear") {
+    $('#stream').empty();
+    return true;
+  }
+  return false;
+}
+
 /* Send a message to the socket.io server */
 var send = function(e) {
   e.preventDefault();
-  characters = charCount($('#query').val());
+  var contents = $('#query').val();
+  characters = charCount(contents);
   if (characters <= limit) {
+    if (contents[0] == '!' && specials(contents)) {
+      characters = 0;
+      $('#charcount p').text((limit-characters) + remaining);
+      $('#query').val('');
+      return;
+    }
     var notEmpty = $('#query').val().replace(/\n/g, '');
     if (notEmpty) {
       if (lastMessage == undefined || lastMessage + 8000 < Date.now()) {
@@ -215,6 +241,9 @@ socket.on('update', function (data) {
   // Flash alert in title if window is hidden
   if (document[hidden]) {
     hiddenCount++;
+    if (audioOn) {
+      audio.play();
+    }
     var state = false;
     if (!intervalID) {
       intervalID = setInterval(function () {
