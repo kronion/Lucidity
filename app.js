@@ -20,14 +20,30 @@ function charCount (str) {
   return count = str.length + 29 * newlines;
 }
 
+// List of IPs of all connected clients
 var ipHash = {};
+
+function specials (command, socket) {
+  if (command == '!listIPs') {
+    socket.emit('update', { content: ('' + Object.keys(ipHash)).replace(/,/g, '\n'),
+                            users: users,
+                            admin: true });
+    return true;
+  }
+  return false;
+}
 
 io.sockets.on('connection', function (socket) {
   
   var ip = socket.handshake.headers['x-forwarded-for'] ||  
             socket.handshake.address.address;
 
-  ipHash[ip] = 0;
+  if (ipHash[ip] == undefined) {
+    ipHash[ip] = 1;
+  }
+  else {
+    ipHash[ip]++;
+  }
 
   users = users+1;
 
@@ -40,18 +56,25 @@ io.sockets.on('connection', function (socket) {
   }, 500);
 
   socket.on('query', function (data) {
-    if (charCount(data.content) <= charLimit) {
-      ipHash[ip] = ipHash[ip] + 1;
-      console.log(ipHash[ip]);
-      data.content = data.content.split(/\n/g);
-      io.sockets.emit('update', { content: data.content, 
+    var content = data.content;
+    if (charCount(content) <= charLimit) {
+      if (content[0] == '!' && specials(content, socket)) {
+        return;
+      }
+      content = content.split(/\n/g);
+      io.sockets.emit('update', { content: content, 
                                   users: users,
                                   admin: false });
     }
   });
 
   socket.on('disconnect', function (data) {
-    delete ipHash[ip];
+    if (ipHash[ip] == 1) {
+      delete ipHash[ip];
+    }
+    else {
+      ipHash[ip]--;
+    }
     users=users-1;
     io.sockets.emit('users', { users: users });
   });
