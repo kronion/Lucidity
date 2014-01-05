@@ -3,6 +3,7 @@ var express = require('express');
 var app = express(),
     server = require('http').createServer(app),
     io = require('socket.io').listen(server);
+io.set('log level', 1);
 app.use(express.static(__dirname + '/public'));
 
 server.listen(3000);
@@ -19,7 +20,15 @@ function charCount (str) {
   return count = str.length + 29 * newlines;
 }
 
+var ipHash = {};
+
 io.sockets.on('connection', function (socket) {
+  
+  var ip = socket.handshake.headers['x-forwarded-for'] ||  
+            socket.handshake.address.address;
+
+  ipHash[ip] = 0;
+
   users = users+1;
 
   socket.broadcast.emit('users', { users: users });
@@ -29,15 +38,20 @@ io.sockets.on('connection', function (socket) {
                             users: users,
                             admin: true });
   }, 500);
+
   socket.on('query', function (data) {
     if (charCount(data.content) <= charLimit) {
+      ipHash[ip] = ipHash[ip] + 1;
+      console.log(ipHash[ip]);
       data.content = data.content.split(/\n/g);
       io.sockets.emit('update', { content: data.content, 
                                   users: users,
                                   admin: false });
     }
   });
+
   socket.on('disconnect', function (data) {
+    delete ipHash[ip];
     users=users-1;
     io.sockets.emit('users', { users: users });
   });
