@@ -11,6 +11,15 @@ server.listen(3000);
 var intro = "Welcome to Lucidity! Ask questions anonymously and get real-time" +
             " attention. Please be respectful of those who are trying to learn."
 
+// Rate limit variables
+var rateLimit1 = "You are sending messages too quickly. Please wait ";
+var rateLimit2 = " and try again.";
+var second = " second";
+var seconds = " seconds";
+var period = 30000;
+var limit = 5;
+var sec = 1000;
+
 var users = -1;
 
 var charLimit = 200;
@@ -33,6 +42,18 @@ function specials (command, socket) {
   return false;
 }
 
+function broadcast (content, socket) {
+  if (charCount(content) <= charLimit) {
+    if (content[0] == '!' && specials(content, socket)) {
+      return;
+    }
+    content = content.split(/\n/g);
+    io.sockets.emit('update', { content: content, 
+                                users: users,
+                                admin: false });
+  }
+}
+
 io.sockets.on('connection', function (socket) {
   
   // Get client IP
@@ -48,10 +69,8 @@ io.sockets.on('connection', function (socket) {
   }
 
   // Initialize rate limiting data structures
-  var period = 30000;
-  var limit = 5;
   var messages = new Array();
-  var msgIndex = 0;
+  var msgIndex = -1;
 
   // Increment number of users
   users++;
@@ -66,20 +85,34 @@ io.sockets.on('connection', function (socket) {
   }, 500);
 
   socket.on('query', function (data) {
+    
+    // Rate limit check
     if (messages.length == limit) {
-      var oldest = messages[msgIndex+1 % limit];
-      if (Date.now() + period)
-      // FINISH HERE!!!
-
-    var content = data.content;
-    if (charCount(content) <= charLimit) {
-      if (content[0] == '!' && specials(content, socket)) {
-        return;
+      var oldest = messages[(msgIndex+1) % limit];
+      var current = Date.now();
+      if (oldest + period > current) {
+        var unit;
+        var wait = Math.ceil((oldest + period - current)/sec);
+        if (wait == 1) {
+          unit = second;
+        }
+        else {
+          unit = seconds;
+        }
+        socket.emit('update', { content: rateLimit1 + wait + unit + rateLimit2,
+                                users: users,
+                                admin: true });
       }
-      content = content.split(/\n/g);
-      io.sockets.emit('update', { content: content, 
-                                  users: users,
-                                  admin: false });
+      else {
+        msgIndex = (msgIndex+1) % limit;
+        messages[msgIndex] = Date.now();
+        broadcast(data.content, socket);
+      }
+    }
+    else {
+      messages.push(Date.now());
+      msgIndex++;
+      broadcast(data.content, socket);
     }
   });
 
