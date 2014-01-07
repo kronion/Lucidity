@@ -35,9 +35,11 @@ function specials (command, socket) {
 
 io.sockets.on('connection', function (socket) {
   
+  // Get client IP
   var ip = socket.handshake.headers['x-forwarded-for'] ||  
             socket.handshake.address.address;
 
+  // Increment number of client connections if duplicate client
   if (ipHash[ip] == undefined) {
     ipHash[ip] = 1;
   }
@@ -45,8 +47,16 @@ io.sockets.on('connection', function (socket) {
     ipHash[ip]++;
   }
 
-  users = users+1;
+  // Initialize rate limiting data structures
+  var period = 30000;
+  var limit = 5;
+  var messages = new Array();
+  var msgIndex = 0;
 
+  // Increment number of users
+  users++;
+
+  // Inform other users of new user
   socket.broadcast.emit('users', { users: users });
 
   setTimeout(function() {
@@ -56,6 +66,11 @@ io.sockets.on('connection', function (socket) {
   }, 500);
 
   socket.on('query', function (data) {
+    if (messages.length == limit) {
+      var oldest = messages[msgIndex+1 % limit];
+      if (Date.now() + period)
+      // FINISH HERE!!!
+
     var content = data.content;
     if (charCount(content) <= charLimit) {
       if (content[0] == '!' && specials(content, socket)) {
