@@ -187,7 +187,7 @@ var send = function(e) {
     }
     var notEmpty = $('#query').val().replace(/\n/g, '');
     if (notEmpty) {
-//      if (lastMessage == undefined || lastMessage + 2000 < Date.now()) {
+      //if (lastMessage == undefined || lastMessage + 2000 < Date.now()) {
         socket.emit('query', {
           content: $('#query').val()
         });
@@ -195,12 +195,12 @@ var send = function(e) {
         characters = 0;
         $('#charcount p').text((limit-characters) + remaining);
         lastMessage = Date.now();
-  //    }
-  //    else if (displayed == false) {
-  //      displayed = true;
-  //      var wait = Math.ceil((lastMessage + 2000 - Date.now())/1000);
-  //      rateLimit(wait);
-  //    }
+      //}
+      //else if (displayed == false) {
+      //  displayed = true;
+      //  var wait = Math.ceil((lastMessage + 2000 - Date.now())/1000);
+      //  rateLimit(wait);
+      //}
     }
   }
 };
@@ -233,6 +233,11 @@ function userCountUpdate(users) {
 /* User update has been received */
 socket.on('users', function (data) {
   userCountUpdate(data.users);
+});
+
+/* Rate limit notification */
+socket.on('limit', function(wait) {
+  rateLimit(wait.content);
 });
 
 /* Message has been received */

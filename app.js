@@ -1,29 +1,31 @@
-/* Express */
+/* Express and Socket.io */
 var express = require('express');
 var app = express(),
     server = require('http').createServer(app),
     io = require('socket.io').listen(server);
-io.set('log level', 1);
+app.use(express.compress());
+app.use(express.cookieParser());
+app.use(express.session({ 'secret': 'Ole Nassau' }));
 app.use(express.static(__dirname + '/public'));
 
 server.listen(3000);
 
+// Message received on connection
 var intro = "Welcome to Lucidity! Ask questions anonymously and get real-time" +
             " attention. Please be respectful of those who are trying to learn."
 
 // Rate limit variables
-var rateLimit1 = "You are sending messages too quickly. Please wait ";
-var rateLimit2 = " and try again.";
-var second = " second";
-var seconds = " seconds";
 var period = 30000;
 var limit = 5;
 var sec = 1000;
 
+// Count of users besides oneself (thus the decrement by one)
 var users = -1;
 
+// Character limit per message
 var charLimit = 200;
 
+// Count message character length
 function charCount (str) {
   var newlines = str.split('\n').length - 1;
   return count = str.length + 29 * newlines;
@@ -32,6 +34,7 @@ function charCount (str) {
 // List of IPs of all connected clients
 var ipHash = {};
 
+// Special server-side commands
 function specials (command, socket) {
   if (command == '!listIPs') {
     socket.emit('update', { content: ('' + Object.keys(ipHash)).replace(/,/g, '\n'),
@@ -42,6 +45,7 @@ function specials (command, socket) {
   return false;
 }
 
+// Send message to all clients
 function broadcast (content, socket) {
   if (charCount(content) <= charLimit) {
     if (content[0] == '!' && specials(content, socket)) {
@@ -54,6 +58,7 @@ function broadcast (content, socket) {
   }
 }
 
+// Handle all client connections
 io.sockets.on('connection', function (socket) {
   
   // Get client IP
@@ -84,6 +89,7 @@ io.sockets.on('connection', function (socket) {
                             admin: true });
   }, 500);
 
+  // Receive message from client
   socket.on('query', function (data) {
     
     // Rate limit check
@@ -91,31 +97,21 @@ io.sockets.on('connection', function (socket) {
       var oldest = messages[(msgIndex+1) % limit];
       var current = Date.now();
       if (oldest + period > current) {
-        var unit;
         var wait = Math.ceil((oldest + period - current)/sec);
-        if (wait == 1) {
-          unit = second;
-        }
-        else {
-          unit = seconds;
-        }
-        socket.emit('update', { content: rateLimit1 + wait + unit + rateLimit2,
+        socket.emit('limit', { content: wait,
                                 users: users,
                                 admin: true });
-      }
-      else {
-        msgIndex = (msgIndex+1) % limit;
-        messages[msgIndex] = Date.now();
-        broadcast(data.content, socket);
+        return;
       }
     }
-    else {
-      messages.push(Date.now());
-      msgIndex++;
-      broadcast(data.content, socket);
-    }
+
+    // Forward message to all users
+    msgIndex = (msgIndex+1) % limit;
+    messages[msgIndex] = Date.now();
+    broadcast(data.content, socket);
   });
 
+  // Client leaves
   socket.on('disconnect', function (data) {
     if (ipHash[ip] == 1) {
       delete ipHash[ip];
