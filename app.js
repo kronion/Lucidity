@@ -8,6 +8,37 @@ app.use(express.cookieParser());
 app.use(express.session({ 'secret': 'Ole Nassau' }));
 app.use(express.static(__dirname + '/public'));
 
+var chats = {};
+
+app.get('/:name', function(req, res) {
+  console.log('connect ' + req.params.name);
+  if (chats[req.params.name] === undefined) {
+    console.log('initializing');
+    var chat = io.of(req.params.name);
+    chats[req.params.name] = { chat: chat, num: 0 };
+    chat.on('connection', function(socket) {
+      console.log(req.params.name);
+      chats[req.params.name].num++;
+      socket.broadcast.emit('test', 'this is a test');
+      socket.on('query', function(data) {
+        socket.broadcast.emit('test', data);   
+      });
+      socket.on('disconnect', function() {
+        console.log('disconnect');
+        if (--chats[req.params.name].num === 0) {
+          console.log('removing ' + req.params.name);
+          chat = null;
+          chats[req.params.name] = undefined;
+        }
+      });
+    });
+  }
+  else {
+    console.log('count for ' + req.params.name + ' is ' + chats[req.params.name].num);
+  }
+  res.sendfile('public/index.html');
+});
+
 server.listen(3000);
 
 // Message received on connection
@@ -72,6 +103,10 @@ io.sockets.on('connection', function (socket) {
   else {
     ipHash[ip]++;
   }
+
+  socket.on('message', function(data) {
+    console.log(data);
+  });
 
   // Initialize rate limiting data structures
   var messages = new Array();

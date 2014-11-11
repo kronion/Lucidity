@@ -2,8 +2,10 @@
 /* GLOBAL VARIABLES                                                           */
 /*----------------------------------------------------------------------------*/
 
+var route = window.location.pathname;
+
 /* Socket.io server connection */
-var socket = io.connect('http://localhost:3000');
+var socket = io.connect('http://localhost:3000' + route);
 
 /* Message variables */
 var admin = "<div class='admin'></div>";
@@ -284,4 +286,13 @@ socket.on('update', function (data) {
 
   // Color flip
   altColor = !altColor;
+});
+
+$(document).ready(function() {
+  var channel = window.location.pathname;
+  socket.send(channel);
+});
+
+socket.on('test', function(data) {
+  console.log(data);
 });
