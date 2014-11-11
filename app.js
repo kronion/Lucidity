@@ -10,6 +10,9 @@ app.use(express.static(__dirname + '/public'));
 
 var chats = {};
 
+// CURRENTLY NOT WORKING CORRECTLY!!!
+// The sockets still capture events after they've been deleted from the
+// hash table... I need to find a way to explicitly delete them
 app.get('/:name', function(req, res) {
   console.log('connect ' + req.params.name);
   if (chats[req.params.name] === undefined) {
